@@ -1,0 +1,39 @@
+- rest:
+    id: rest-user
+    path: /user
+    post:
+      - id: post-getUserById
+        path: /id
+        to: direct:getUserById
+- route:
+    id: route-getUserById
+    from:
+      id: from-fbd1
+      uri: direct
+      parameters:
+        name: getUserById
+      steps:
+        - unmarshal:
+            id: unmarshal-b80a
+            json:
+              id: json-c703
+        - log:
+            id: log-8553
+            message: " ${body}"
+        - setHeader:
+            id: setHeader-4ecb
+            name: id
+            expression:
+              simple:
+                id: simple-8851
+                expression: ${body[id]}
+        - log:
+            id: log-a555
+            message: "Gönderilen ID: ${header.id}"
+        - toD:
+            id: toD-9b21
+            uri: >-
+              https://dummyjson.com/users/${header.id}?bridgeEndpoint=true&httpMethod=GET
+        - log:
+            id: log-736a
+            message: "Response: ${body}"
