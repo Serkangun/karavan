@@ -1,0 +1,51 @@
+- rest:
+    id: rest-f6fd
+    path: /api/incident
+    post:
+      - id: post-0066
+        path: /createincident
+        to: direct:Incident
+- route:
+    id: route-5f88
+    nodePrefixId: route-244
+    from:
+      id: from-283e
+      uri: direct
+      parameters:
+        name: Incident
+      steps:
+        - log:
+            id: log-request-body
+            message: "Incoming Body: ${body}"
+        - setHeader:
+            id: set-header-content-type
+            name: Content-Type
+            expression:
+              constant:
+                id: constant-f9d9
+                expression: application/json
+        - log:
+            id: log-before-request
+            message: "Headers: ${headers}, Body: ${body}"
+        - removeHeaders:
+            id: removeHeaders-738c
+            pattern: "*"
+        - setHeader:
+            id: setHeader-2f66
+            name: Authorization
+            expression:
+              constant:
+                id: constant-31d1
+                expression: Basic Yml6dGFsa3dzOkIxWlRAbGsyMCE4
+        - to:
+            id: to-http-post
+            description: SNow
+            uri: https
+            parameters:
+              httpUri: >-
+                https://helpdesktest.kocsistem.com.tr/api/global/migros/incident/create
+              httpMethod: POST
+              bridgeEndpoint: true
+        - log:
+            id: log-response
+            message: "Response: ${body}"
