@@ -30,10 +30,49 @@
         - log:
             id: log-a555
             message: "Gönderilen ID: ${header.id}"
-        - toD:
-            id: toD-9b21
-            uri: >-
-              https://dummyjson.com/users/${header.id}?bridgeEndpoint=true&httpMethod=GET
-        - log:
-            id: log-736a
-            message: "Response: ${body}"
+        - doTry:
+            id: doTry-6527
+            doCatch:
+              - id: doCatch-059a
+                exception:
+                  - org.apache.camel.http.base.HttpOperationFailedException
+                  - org.apache.camel.component.bean.MethodNotFoundException
+                  - >-
+                    org.apache.camel.language.bean.RuntimeBeanExpressionException
+                onWhen:
+                  id: when-8859
+                  expression:
+                    simple:
+                      id: simple-9f7f
+                      expression: "\"${header.id} == null\""
+                steps:
+                  - log:
+                      id: log-5235
+                      message: "\"Girilen ID İle Uyumlu User Yoktur 404 Hatası Aldık\""
+                      loggingLevel: INFO
+                  - setBody:
+                      id: setBody-a482
+                      expression:
+                        simple:
+                          id: simple-3c5f
+                          expression: |-
+                            {
+                                                      "hata": "Kullanıcı bulunamadı.",
+                                                      "detay": "ID: ${header.id} ile eşleşen bir kullanıcı bulunamadı."
+                                                    }
+                  - stop:
+                      id: stop-72de
+            doFinally:
+              id: doFinally-174b
+              steps:
+                - log:
+                    id: log-1ce1
+                    message: "\"İstek tamamlandı1.\""
+            steps:
+              - toD:
+                  id: toD-9b21
+                  uri: >-
+                    https://dummyjson.com/users/${header.id}?bridgeEndpoint=true&httpMethod=GET
+              - log:
+                  id: log-736a
+                  message: "Response: ${body}"
