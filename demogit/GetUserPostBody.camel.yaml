@@ -67,7 +67,7 @@
               steps:
                 - log:
                     id: log-1ce1
-                    message: "\"İstek tamamlandı1.\""
+                    message: "\"İstek tamamlandı.\""
             steps:
               - toD:
                   id: toD-9b21
