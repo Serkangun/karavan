@@ -16,6 +16,13 @@
         exchangePattern: InOut
       steps:
         - setProperty:
+            id: setProperty-0c3a
+            name: ReqBody
+            expression:
+              simple:
+                id: simple-90d6
+                expression: ${body}
+        - setProperty:
             id: setProperty-692d
             description: setServiceType
             name: setServiceType
@@ -72,6 +79,11 @@
             message: ${exchangeProperty.setPlatform}
             loggingLevel: INFO
             logName: setPlatrofmLog
+        - log:
+            id: log-50f9
+            message: ${body}
+            loggingLevel: INFO
+            logName: bodyLog
         - choice:
             id: choice-d64b
             when:
@@ -83,13 +95,135 @@
                 steps:
                   - log:
                       id: log-049e
-                      message: "\"cloud a aç\""
+                      message: "\"Create İşlemi Cloud Ortama Açılacak\""
+                  - setBody:
+                      id: setBody-c123
+                      expression:
+                        simple:
+                          id: simple-c799
+                          expression: |-
+                            ${exchangeProperty.ReqBody}
+                             
+                  - doTry:
+                      id: doTry-2517
+                      doCatch:
+                        - id: doCatch-8937
+                          exception:
+                            - java.lang.Exception
+                          onWhen:
+                            id: when-77ca
+                            expression:
+                              groovy:
+                                id: groovy-2246
+                          steps:
+                            - log:
+                                id: log-ff1d
+                                message: Cloud Hata:${exception.message}
+                            - setBody:
+                                id: setBody-b4b4
+                                expression:
+                                  simple:
+                                    id: simple-77bd
+                                    expression: |-
+                                      {
+                                        "hata": "Cloud ortamda işlem başarısız oldu.",
+                                        "detay": "${exception.message}"
+                                      }
+                            - setHeaders:
+                                id: setHeaders-3eaf
+                                headers:
+                                  - id: setHeader-6ff8
+                                    name: CamelHttpResponseCode
+                                    expression:
+                                      constant:
+                                        id: constant-5680
+                                        expression: "500"
+                            - log:
+                                id: log-a0ae
+                                message: "\"Sunucu Bağlantı Hatası\""
+                      steps:
+                        - removeHeaders:
+                            id: removeHeaders-2269
+                            pattern: "*"
+                        - setHeaders:
+                            id: setHeaders-f1be
+                            headers:
+                              - id: setHeader-2432
+                                name: Authorization
+                                expression:
+                                  constant:
+                                    id: constant-4234
+                                    expression: Basic Yml6dGFsa3dzOkIxWlRAbGsyMCE4
+                        - log:
+                            id: log-b76c
+                            message: ${body}
+                            logName: RequestBody
+                        - to:
+                            id: to-5df8
+                            uri: https
+                            parameters:
+                              httpUri: >-
+                                https://kocsistemdev.service-now.com/api/dxck/ks_migros_integration/migros/create/incident
+                              httpMethod: POST
+                              getWithBody: false
+                        - log:
+                            id: log-9ec1
+                            message: Response:${body}
             otherwise:
               id: otherwise-f3a5
               steps:
                 - log:
                     id: log-e4ef
-                    message: "\"onprem e aç\""
+                    message: "\"Create İşlemi On-Prem Ortama Açılacak\""
+                - doTry:
+                    id: doTry-e553
+                    doCatch:
+                      - id: doCatch-e504
+                        exception:
+                          - java.lang.Exception
+                        onWhen:
+                          id: when-b6ab
+                          expression:
+                            groovy:
+                              id: groovy-6d50
+                        steps:
+                          - log:
+                              id: log-8939
+                              message: Onprem Hata:${exception.message}
+                          - setBody:
+                              id: setBody-dd9b
+                              expression:
+                                simple:
+                                  id: simple-90cb
+                                  expression: |-
+                                    {
+                                      "hata": "Cloud ortamda işlem başarısız oldu.",
+                                      "detay": "${exception.message}"
+                                    }
+                          - setHeader:
+                              id: setHeader-9f0c
+                              name: CamelHttpResponseCode
+                              expression:
+                                constant:
+                                  id: constant-790e
+                                  expression: "500"
+                          - log:
+                              id: log-ead6
+                              message: "\"Sunucu Bağlantı Hatası\""
+                    steps:
+                      - removeHeaders:
+                          id: removeHeaders-043e
+                          pattern: "*"
+                      - to:
+                          id: to-5438
+                          uri: https
+                          parameters:
+                            httpUri: >-
+                              https://helpdesktest.kocsistem.com.tr/api/global/migros/incident/create
+                            httpMethod: POST
+                      - log:
+                          id: log-b385
+                          message: Response:${body}
         - to:
             id: to-309d
             uri: kamelet:log-action
