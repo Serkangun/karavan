@@ -96,14 +96,6 @@
                   - log:
                       id: log-049e
                       message: "\"Create İşlemi Cloud Ortama Açılacak\""
-                  - setBody:
-                      id: setBody-c123
-                      expression:
-                        simple:
-                          id: simple-c799
-                          expression: |-
-                            ${exchangeProperty.ReqBody}
-                             
                   - doTry:
                       id: doTry-2517
                       doCatch:
@@ -141,10 +133,32 @@
                             - log:
                                 id: log-a0ae
                                 message: "\"Sunucu Bağlantı Hatası\""
+                        - id: doCatch-f791
+                          exception:
+                            - java.lang.NullPointerException
+                          onWhen:
+                            id: when-acf2
+                            expression:
+                              groovy:
+                                id: groovy-b264
+                          steps:
+                            - log:
+                                id: log-1108
+                                message: Cloud Hata:${exception.message}
                       steps:
                         - removeHeaders:
                             id: removeHeaders-2269
                             pattern: "*"
+                        - setBody:
+                            id: setBody-656d
+                            expression:
+                              simple:
+                                id: simple-c343
+                                expression: ${exchangeProperty.ReqBody}
+                        - log:
+                            id: log-b76c
+                            message: ${body}
+                            logName: RequestBody
                         - setHeaders:
                             id: setHeaders-f1be
                             headers:
@@ -154,10 +168,18 @@
                                   constant:
                                     id: constant-4234
                                     expression: Basic Yml6dGFsa3dzOkIxWlRAbGsyMCE4
-                        - log:
-                            id: log-b76c
-                            message: ${body}
-                            logName: RequestBody
+                              - id: setHeader-1940
+                                name: Content-Type
+                                expression:
+                                  constant:
+                                    id: constant-2420
+                                    expression: application/json
+                              - id: setHeader-cb78
+                                name: Accept
+                                expression:
+                                  constant:
+                                    id: constant-ee16
+                                    expression: application/json
                         - to:
                             id: to-5df8
                             uri: https
@@ -166,6 +188,7 @@
                                 https://kocsistemdev.service-now.com/api/dxck/ks_migros_integration/migros/create/incident
                               httpMethod: POST
                               getWithBody: false
+                              disableStreamCache: false
                         - log:
                             id: log-9ec1
                             message: Response:${body}
@@ -197,7 +220,7 @@
                                   id: simple-90cb
                                   expression: |-
                                     {
-                                      "hata": "Cloud ortamda işlem başarısız oldu.",
+                                      "hata": "On-Prem ortamda işlem başarısız oldu.",
                                       "detay": "${exception.message}"
                                     }
                           - setHeader:
@@ -214,6 +237,31 @@
                       - removeHeaders:
                           id: removeHeaders-043e
                           pattern: "*"
+                      - setBody:
+                          id: setBody-730f
+                          expression:
+                            simple:
+                              id: simple-ec73
+                              expression: ${exchangeProperty.ReqBody}
+                      - log:
+                          id: log-78cb
+                          message: ${body}
+                          logName: RequestBodyOn-Prem
+                      - setHeaders:
+                          id: setHeaders-8c65
+                          headers:
+                            - id: setHeader-e19b
+                              name: Authorization
+                              expression:
+                                constant:
+                                  id: constant-5ee8
+                                  expression: Basic Yml6dGFsa3dzOkIxWlRAbGsyMCE4
+                            - id: setHeader-8398
+                              name: Content-Type
+                              expression:
+                                constant:
+                                  id: constant-1721
+                                  expression: application/json
                       - to:
                           id: to-5438
                           uri: https
